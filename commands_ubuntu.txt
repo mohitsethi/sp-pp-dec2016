@@ -1,0 +1,181 @@
+BOOTING THE PUPPET MASTER SERVER
+
+On the lab workstation:
+$ cd puppet-fundamentals-lab
+$ vagrant box add centos65-base centos65.box
+$ cd puppetmaster
+$ vagrant up
+$ vagrant ssh
+
+
+
+On the puppetmaster:
+
+BASE INSTALLATION
+# Install development tools
+$ sudo apt-get install -y build-essential git ntp vim 
+$ GG
+$ sudo chkconfig ntp on
+
+-------------------------------------------------------------------------------
+ PUPPET MASTER INSTALL
+
+$ wget https://apt.puppetlabs.com/puppetlabs-release-trusty.deb
+$ sudo dpkg -i puppetlabs-release-trusty.deb
+$ sudo apt-get update -y
+$ sudo apt-get install puppetmaster
+
+# Agent installation
+# sudo apt-get -y install puppet 
+
+Verify:
+
+$ puppet -V
+
+
+
+-------------------------------------------------------------------------------
+
+SETTING UP DIRECTORY ENVIRONMENTS
+
+$ sudo mkdir -p /etc/puppet/environments/production/{modules,manifests}
+$ cd /etc/puppet/environments/production/
+$ sudo vim environment.conf
+
+Populate the file with the following:
+  modulepath = /etc/puppet/environments/production/modules
+  environment_timeout = 5s
+
+$ cd /etc/puppet
+$ sudo vim puppet.conf
+
+Populate the file with the following:
+
+  [master]
+    environmentpath = $confdir/environments
+    basemodulepath = $confdir/modules:/opt/puppet/share/puppet/modules
+
+  [main]
+    dns_alt_names = puppet,puppetmaster,puppetmaster.arris.com
+
+-------------------------------------------------------------------------------
+    
+DEALING WITH SELINUX
+
+$ sudo setenforce permissive
+$ sudo sed -i 's\=enforcing\=permissive\g' /etc/sysconfig/selinux
+
+Verify:
+$ sudo getenforce
+$ sudo cat /etc/sysconfig/selinux
+
+-------------------------------------------------------------------------------
+    
+GENERATING CERTIFICATES
+
+$ sudo puppet master --verbose --no-daemonize
+Ctrl-C
+
+Verify:
+$ sudo ls -la /var/lib/puppet/ssl
+
+Remove and regenerate certificates:
+$ sudo rm -r /var/lib/puppet/ssl
+$ sudo puppet master --verbose --no-daemonize
+
+-------------------------------------------------------------------------------
+    
+ADDING IPTABLES FIREWALL RULES
+
+$ sudo vim /etc/sysconfig/iptables
+
+Add the following directly below the line that ends with "--dport 22 -j ACCEPT":
+  -A INPUT –m state --state NEW –m tcp –p tcp --dport 8140 –j ACCEPT
+
+$ sudo service iptables restart
+
+-------------------------------------------------------------------------------
+
+INSTALLING APACHE AND PASSENGER
+
+$ sudo yum -y install httpd httpd-devel mod_ssl ruby-devel rubygems gcc gcc-c++ libcurl-devel openssl-devel
+$ sudo gem install rack passenger
+$ sudo passenger-install-apache2-module
+$ sudo mkdir -p /usr/share/puppet/rack/puppetmasterd/{public,tmp}
+$ sudo cp /usr/share/puppet/ext/rack/config.ru /usr/share/puppet/rack/puppetmasterd/
+$ sudo chown puppet:puppet /usr/share/puppet/rack/puppetmasterd/config.ru
+$ cd ~
+$ git clone https://github.com/mohitsethi/puppet-fundamentals-puppetmaster
+$ vim puppetmaster.conf
+
+$ if 'permission denied'
+$ chcon -R -h -t httpd_sys_script_exec_t
+
+Verify the Passenger version is correct. Modify the SSLCertificateFile and SSLCertificateKeyFile to reflect the server's fully qualified DNS name. In the lab, the hostname is just "puppetmaster" so the filenames should both be "puppetmaster.pem"
+
+$ sudo cp puppetmaster.conf /etc/httpd/conf.d/puppetmaster.conf
+$ sudo service httpd start
+$ sudo chkconfig httpd on
+
+
+-------------------------------------------------------------------------------
+CONFIGURE AGENT TO TALK to PUPPET-MASTER
+
+# Open /etc/puppet/puppet.conf
+
+[agent]
+server = puppetmaster.arris.com
+
+$ vim /etc/default/puppet
+  change START=no to START=yes
+
+$ sudo service puppet restart
+
+# Invoke agent 
+  $ sudo puppet agent --test
+
+
+-------------------------------------------------------------------------------
+
+Day 2 
+
+
+INSTALLATION of Puppet Explorer
+
+
+# Repository: https://github.com/spotify/puppetexplorer
+
+# On Puppetmaster
+  # Install PuppetDB
+  $ sudo apt-get install puppetdb
+  # Documentation: https://docs.puppet.com/puppetdb/4.1/install_from_packages.html
+
+  $ git clone -v https://github.com/spotify/puppetexplorer
+  $ cd puppetexplorer
+  $  vim Gruntfile.js
+    add following content: 
+
+  $ sudo apt-get install nodejs-legacy
+  $ sudo apt-get install npm -y
+  $ 
+
+
+# DEFAULT NODE
+`
+node default { }
+
+node 'lamp-1' {
+
+}
+`
+
+
+
+
+
+
+
+
+
+
+
