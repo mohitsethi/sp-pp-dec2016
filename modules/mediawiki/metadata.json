@@ -1,0 +1,15 @@
+{
+  "name": "ms-mediawiki",
+  "version": "0.1.0",
+  "author": "mohitsethi",
+  "summary": "Configures my awesome app",
+  "license": "Apache 2.0",
+  "source": "http://github.com/mohitsethi/ms-app",
+  "project_page": "https://github.com/mohitsethi/ms-app",
+  "issues_url": "https://github.com/mohitsethi/ms-app/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"},
+    {"name":"puppetlabs-mysql","version_requirement":"~> 3.1.0"}
+  ]
+}
+
