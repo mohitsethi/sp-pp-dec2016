@@ -1,0 +1,10 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    puppetclassify (0.1.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  puppetclassify
