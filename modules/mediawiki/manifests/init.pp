@@ -1,6 +1,6 @@
-# == Class: mediawiki
+# == Class: mediatest
 #
-# Full description of class mediawiki here.
+# Full description of class mediatest here.
 #
 # === Parameters
 #
@@ -23,7 +23,7 @@
 #
 # === Examples
 #
-#  class { 'mediawiki':
+#  class { 'mediatest':
 #    servers => [ 'pool.ntp.org', 'ntp.local.company.com' ],
 #  }
 #
@@ -36,14 +36,14 @@
 # Copyright 2016 Your name here, unless otherwise noted.
 #
 
-file  {
+
+class mediatest {
+ file  {
    '/var/www/html/index.html':
     ensure  => 'present',
-    content => template("index.html.erb"),
-}
+    content => template('mediatest/index.html.erb'),
+ }
 
-
-class mediawiki {
-  include ::mysql::server
+ include ::mysql::server
 
 }
